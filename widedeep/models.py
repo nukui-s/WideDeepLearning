@@ -11,16 +11,16 @@ class DNNLinearCombinedEstimator(object):
     estimator_cls = None
     prediction_key = None
 
-    def __init__(self, linear_feature_columns=None, dnn_feature_columns=None, linear_optimizer='Ftrl',
+    def __init__(self, linear_feature_set=None, dnn_feature_set=None, linear_optimizer='Ftrl',
                  dnn_hidden_units=(100,), dnn_optimizer='Adagrad', dnn_activation_fn=tf.nn.relu, dnn_dropout=None,
                  num_epochs=1, shuffle=True, batch_size=128, num_threads=1, **kwargs):
         """
 
         Parameters
         ----------
-        linear_feature_columns : FeatureColumns
+        linear_feature_set : FeatureColumns
             feature columns for linear part
-        dnn_feature_columns : FeatureColumns
+        dnn_feature_set : FeatureColumns
             feature columns for dnn part
         linear_optimizer :
             optimizer for linear model
@@ -44,8 +44,8 @@ class DNNLinearCombinedEstimator(object):
             other parameters for model
 
         """
-        self.linear_feature_columns = linear_feature_columns
-        self.dnn_feature_columns = dnn_feature_columns
+        self.linear_feature_set = linear_feature_set
+        self.dnn_feature_set = dnn_feature_set
         self.num_epochs = num_epochs
         self.shuffle = shuffle
         self.batch_size = batch_size
@@ -80,13 +80,13 @@ class DNNLinearCombinedEstimator(object):
         model_args = {'dnn_hidden_units': self.dnn_hidden_units, 'dnn_optimizer': self.dnn_optimizer,
                       'dnn_activation_fn': self.dnn_activation_fn, 'dnn_dropout': self.dnn_dropout}
 
-        if self.linear_feature_columns:
-            self.linear_feature_columns.set_columns(x_data)
-            model_args['linear_feature_columns'] = self.linear_feature_columns.get_feature_columns()
+        if self.linear_feature_set:
+            self.linear_feature_set.set_columns(x_data)
+            model_args['linear_feature_columns'] = self.linear_feature_set.get_feature_columns()
 
-        if self.dnn_feature_columns:
-            self.dnn_feature_columns.set_columns(x_data)
-            model_args['dnn_feature_columns'] = self.dnn_feature_columns.get_feature_columns()
+        if self.dnn_feature_set:
+            self.dnn_feature_set.set_columns(x_data)
+            model_args['dnn_feature_columns'] = self.dnn_feature_set.get_feature_columns()
 
         self.model = self.estimator_cls(**model_args, **self.other_args)
 
@@ -144,13 +144,13 @@ class DNNLinearCombinedRegressor(DNNLinearCombinedEstimator):
 class LinearClassifier(DNNLinearCombinedClassifier):
     """Linear classifier"""
 
-    def __init__(self, feature_columns, linear_optimizer='Ftrl',
+    def __init__(self, feature_set, linear_optimizer='Ftrl',
                  num_epochs=1, shuffle=True, batch_size=128, num_threads=1, **kwargs):
         """
 
         Parameters
         ----------
-        feature_columns : FeatureColumns
+        feature_set : FeatureColumns
             feature columns for linear part
         linear_optimizer :
             optimizer for linear model
@@ -166,7 +166,7 @@ class LinearClassifier(DNNLinearCombinedClassifier):
             other parameters for model
 
         """
-        super().__init__(linear_feature_columns=feature_columns, linear_optimizer=linear_optimizer,
+        super().__init__(linear_feature_set=feature_set, linear_optimizer=linear_optimizer,
                          num_epochs=num_epochs, shuffle=shuffle, batch_size=batch_size,
                          num_threads=num_threads, **kwargs)
 
@@ -174,13 +174,13 @@ class LinearClassifier(DNNLinearCombinedClassifier):
 class LinearRegressor(DNNLinearCombinedRegressor):
     """Linear regressor"""
 
-    def __init__(self, feature_columns, linear_optimizer='Ftrl',
+    def __init__(self, feature_set, linear_optimizer='Ftrl',
                  num_epochs=1, shuffle=True, batch_size=128, num_threads=1, **kwargs):
         """
 
         Parameters
         ----------
-        feature_columns : FeatureColumns
+        feature_set : FeatureColumns
             feature columns for linear part
         linear_optimizer :
             optimizer for linear model
@@ -196,7 +196,7 @@ class LinearRegressor(DNNLinearCombinedRegressor):
             other parameters for model
 
         """
-        super().__init__(linear_feature_columns=feature_columns, linear_optimizer=linear_optimizer,
+        super().__init__(linear_feature_set=feature_set, linear_optimizer=linear_optimizer,
                          num_epochs=num_epochs, shuffle=shuffle, batch_size=batch_size,
                          num_threads=num_threads, **kwargs)
 
@@ -204,14 +204,14 @@ class LinearRegressor(DNNLinearCombinedRegressor):
 class DNNClassifier(DNNLinearCombinedClassifier):
     """DNN classifier"""
 
-    def __init__(self, feature_columns, dnn_hidden_units=(100,),
+    def __init__(self, feature_set, dnn_hidden_units=(100,),
                  dnn_optimizer='Adagrad', dnn_activation_fn=tf.nn.relu, dnn_dropout=None,
                  num_epochs=1, shuffle=True, batch_size=128, num_threads=1, **kwargs):
         """
 
         Parameters
         ----------
-        feature_columns : FeatureColumns
+        feature_set : FeatureColumns
             feature columns for dnn part
         dnn_hidden_units : tuple
             units of hidden layers in DNN
@@ -233,7 +233,7 @@ class DNNClassifier(DNNLinearCombinedClassifier):
             other parameters for model
 
         """
-        super().__init__(dnn_feature_columns=feature_columns, dnn_hidden_units=dnn_hidden_units,
+        super().__init__(dnn_feature_set=feature_set, dnn_hidden_units=dnn_hidden_units,
                          dnn_optimizer=dnn_optimizer, dnn_activation_fn=dnn_activation_fn,
                          dnn_dropout=dnn_dropout, num_epochs=num_epochs, shuffle=shuffle,
                          batch_size=batch_size, num_threads=num_threads, **kwargs)
@@ -242,14 +242,14 @@ class DNNClassifier(DNNLinearCombinedClassifier):
 class DNNRegressor(DNNLinearCombinedRegressor):
     """DNN regressor"""
 
-    def __init__(self, feature_columns, dnn_hidden_units=(100,),
+    def __init__(self, feature_set, dnn_hidden_units=(100,),
                  dnn_optimizer='Adagrad', dnn_activation_fn=tf.nn.relu, dnn_dropout=None,
                  num_epochs=1, shuffle=True, batch_size=128, num_threads=1, **kwargs):
         """
 
         Parameters
         ----------
-        feature_columns : FeatureColumns
+        feature_set : FeatureColumns
             feature columns for dnn part
         dnn_hidden_units : tuple
             units of hidden layers in DNN
@@ -271,7 +271,7 @@ class DNNRegressor(DNNLinearCombinedRegressor):
             other parameters for model
 
         """
-        super().__init__(dnn_feature_columns=feature_columns, dnn_hidden_units=dnn_hidden_units,
+        super().__init__(dnn_feature_set=feature_set, dnn_hidden_units=dnn_hidden_units,
                          dnn_optimizer=dnn_optimizer, dnn_activation_fn=dnn_activation_fn,
                          dnn_dropout=dnn_dropout, num_epochs=num_epochs, shuffle=shuffle,
                          batch_size=batch_size, num_threads=num_threads, **kwargs)
