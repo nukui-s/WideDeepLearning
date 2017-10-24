@@ -1,2 +1,5 @@
 from .dataproc import DataProcessor
-from .dnnlinear import DNNLinearCombinedClassifier, DNNLinearCombinedRegressor
+from .models import (
+        DNNLinearCombinedClassifier, DNNLinearCombinedRegressor,
+        LinearClassifier, LinearRegressor,
+        DNNClassifier, DNNRegressor)
