@@ -4,10 +4,31 @@ import numpy
 import tensorflow as tf
 
 
-class DataProcessor(object):
+class FeatureColumns(object):
+    """Define feature columns used in train"""
 
     def __init__(self, numeric_features=None, vocab_features=None, embedding_features=None, hash_features=None,
                  embedding_dims=None, hash_bucket_sizes=None):
+        """
+
+        Parameters
+        ----------
+        numeric_features : list of str
+            column name of numeric features
+        vocab_features : list of str
+            column name of vocabrary features
+        embedding_features : list of str
+            column name of embedding features
+        hash_features : list of str
+            column name of hash features
+        embedding_dims : list of int or dict
+            embedding dimmension for embedding_features
+            len(embedding_dims) must be equal to len(embedding_features)
+        hash_bucket_sizes : list of int or dict
+            hash buckets sizes used by hash features
+            len(hash_bucket_sizes) must be equal to len(hash_features)
+
+        """
         self.numeric_features = numeric_features or []
         self.vocab_features = vocab_features or []
         self.hash_features = hash_features or []
@@ -33,6 +54,14 @@ class DataProcessor(object):
             self.hash_bucket_sizes = {k: v for k, v in zip(self.hash_features, self.hash_bucket_sizes)}
 
     def set_columns(self, x_data):
+        """set up columns by input data
+
+        Parameters
+        ----------
+        x_data : pandas.DataFrame
+            input data used for training model
+
+        """
         self.columns = []
 
         for feature in self.numeric_features:
@@ -71,7 +100,14 @@ class DataProcessor(object):
             self.columns.append(column)
 
     def get_feature_columns(self):
+        """get feature columns using training TF model
+
+        Returns
+        -------
+        list
+            list of feature column
+
+        """
         if self.columns is None:
             raise ValueError("set_columns() must be run before get_feature_columns()")
         return self.columns
-

@@ -1,4 +1,4 @@
-from .dataproc import DataProcessor
+from .columns import FeatureColumns
 from .models import (
         DNNLinearCombinedClassifier, DNNLinearCombinedRegressor,
         LinearClassifier, LinearRegressor,
