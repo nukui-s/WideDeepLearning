@@ -51,6 +51,7 @@ class DNNLinearCombinedEstimator(object):
         self.batch_size = batch_size
         self.num_epochs = num_epochs
         self.num_threads = num_threads
+        self.linear_optimizer = linear_optimizer
         self.dnn_hidden_units = dnn_hidden_units
         self.dnn_optimizer = dnn_optimizer
         self.dnn_activation_fn = dnn_activation_fn
@@ -77,7 +78,8 @@ class DNNLinearCombinedEstimator(object):
         assert isinstance(x_data, pandas.DataFrame)
         assert isinstance(t_data, pandas.Series)
 
-        model_args = {'dnn_hidden_units': self.dnn_hidden_units, 'dnn_optimizer': self.dnn_optimizer,
+        model_args = {'linear_optimizer': self.linear_optimizer,
+                      'dnn_hidden_units': self.dnn_hidden_units, 'dnn_optimizer': self.dnn_optimizer,
                       'dnn_activation_fn': self.dnn_activation_fn, 'dnn_dropout': self.dnn_dropout}
 
         if self.linear_feature_set:
@@ -108,14 +110,16 @@ class DNNLinearCombinedEstimator(object):
             prediction values
 
         """
-        input_fn = self._get_input_fn(x_data)
+        input_fn = self._get_input_fn(x_data, is_predict=True)
         return numpy.hstack([res[self.prediction_key] for res in self.model.predict(input_fn)])
 
-    def _get_input_fn(self, x, y=None):
+    def _get_input_fn(self, x, y=None, is_predict=False):
+        num_epochs = 1 if is_predict else self.num_epochs
+        shuffle = False if is_predict else self.shuffle
         x = self._cast_category_into_primitive(x)
         return tf.estimator.inputs.pandas_input_fn(
-                    x, y, batch_size=self.batch_size, num_epochs=self.num_epochs,
-                    shuffle=self.shuffle, target_column='_target', num_threads=self.num_threads)
+                    x, y, batch_size=self.batch_size, num_epochs=num_epochs,
+                    shuffle=shuffle, target_column='_target', num_threads=self.num_threads)
 
     def _cast_category_into_primitive(self, x_data):
         _x_data = pandas.DataFrame(index=x_data.index)
