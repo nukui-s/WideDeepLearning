@@ -251,3 +251,99 @@ class HashEmbeddingFeature(Feature):
         embed_dim = self.embed_dim if self.embed_dim else int(numpy.log2(unique_size))
         embed_column = tf.feature_column.embedding_column(hash_column, embed_dim)
         return embed_column
+
+
+class CrossedFeature(Feature):
+    """Crossed columns feature"""
+
+    def __init__(self, names, hash_bucket_size=100):
+        """
+
+        Parameters
+        ----------
+        names : list of str
+            key names of columns
+        hash_bucket_size : int
+            hash bucket size used for crossed column
+
+        """
+        self.names = names
+        self.hash_bucket_size = hash_bucket_size
+
+    def get_tf_column(self, x_data):
+        """get TensorFlow feature column
+
+        Parameters
+        ----------
+        x_data : pandas.DataFrame
+            input data for training
+
+        Returns
+        -------
+        tensorflow feature column
+
+        """
+        columns = []
+        for name in self.names:
+            assert x_data[name].dtype.name == 'category'
+            categories = x_data[name].cat.categories.tolist()
+            column = tf.feature_column.categorical_column_with_vocabulary_list(name, categories)
+            columns.append(column)
+        return tf.feature_column.crossed_column(columns, self.hash_bucket_size)
+
+
+class CrossedIndicatorFeature(CrossedFeature):
+    """Crossed indicator columns feature"""
+
+    def get_tf_column(self, x_data):
+        """get TensorFlow feature column
+
+        Parameters
+        ----------
+        x_data : pandas.DataFrame
+            input data for training
+
+        Returns
+        -------
+        tensorflow feature column
+
+        """
+        crossed_column = super().get_tf_column(x_data)
+        return tf.feature_column.indicator_column(crossed_column)
+
+
+class CrossedEmbeddingFeature(CrossedFeature):
+    """Crossed indicator columns feature"""
+
+    def __init__(self, names, hash_bucket_size=100, embed_dim=None):
+        """
+
+        Parameters
+        ----------
+        names : list of str
+            key names of columns
+        hash_bucket_size : int
+            hash bucket size used for crossed column
+        embed_dim : int
+            embedding dimension
+
+        """
+        super().__init__(names, hash_bucket_size=hash_bucket_size)
+        self.embed_dim = embed_dim
+
+    def get_tf_column(self, x_data):
+        """get TensorFlow feature column
+
+        Parameters
+        ----------
+        x_data : pandas.DataFrame
+            input data for training
+
+        Returns
+        -------
+        tensorflow feature column
+
+        """
+        crossed_column = super().get_tf_column(x_data)
+        embed_dim = self.embed_dim if self.embed_dim else int(numpy.log2(self.hash_bucket_size))
+        return tf.feature_column.embedding_column(crossed_column, embed_dim)
